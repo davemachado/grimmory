@@ -103,6 +103,33 @@ describe('BookSocketService', () => {
     expect(invalidateSpy).toHaveBeenCalledWith({queryKey: ['books', 'detail', 3]});
   });
 
+  it('patches audiobook cover timestamps so audiobook covers refresh', () => {
+    const audiobook = makeBook(5, {
+      metadata: {
+        bookId: 5,
+        title: 'Audiobook 5',
+        coverUpdatedOn: '2026-03-01T00:00:00Z',
+        audiobookCoverUpdatedOn: '2026-03-01T00:00:00Z',
+      },
+    });
+    queryClient.setQueryData<Book[]>(BOOKS_QUERY_KEY, [audiobook]);
+
+    service.handleMultipleBookCoverPatches([
+      {id: 5, coverUpdatedOn: '2026-03-01T00:00:00Z', audiobookCoverUpdatedOn: '2026-03-26T12:34:00Z'},
+    ]);
+
+    expect(queryClient.getQueryData<Book[]>(BOOKS_QUERY_KEY)).toEqual([
+      {
+        ...audiobook,
+        metadata: {
+          ...audiobook.metadata,
+          coverUpdatedOn: '2026-03-01T00:00:00Z',
+          audiobookCoverUpdatedOn: '2026-03-26T12:34:00Z',
+        },
+      },
+    ]);
+  });
+
   it('ignores empty cover patch lists', () => {
     const setQueryDataSpy = vi.spyOn(queryClient, 'setQueryData');
 

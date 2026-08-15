@@ -389,7 +389,7 @@ export class BookService {
     this.bookSocketService.handleBookMetadataUpdate(bookId);
   }
 
-  handleMultipleBookCoverPatches(patches: { id: number; coverUpdatedOn: string }[]): void {
+  handleMultipleBookCoverPatches(patches: { id: number; coverUpdatedOn?: string | null; audiobookCoverUpdatedOn?: string | null }[]): void {
     this.bookSocketService.handleMultipleBookCoverPatches(patches);
   }
 }

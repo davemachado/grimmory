@@ -39,15 +39,21 @@ export class BookSocketService {
     invalidateBookDetailQueries(this.queryClient, [bookId]);
   }
 
-  handleMultipleBookCoverPatches(patches: { id: number; coverUpdatedOn: string }[]): void {
+  handleMultipleBookCoverPatches(patches: { id: number; coverUpdatedOn?: string | null; audiobookCoverUpdatedOn?: string | null }[]): void {
     if (!patches || patches.length === 0) return;
-    const patchMap = new Map(patches.map(p => [p.id, p.coverUpdatedOn]));
+    const patchMap = new Map(patches.map(p => [p.id, p]));
     this.queryClient.setQueryData<Book[]>(BOOKS_QUERY_KEY, current =>
       (current ?? []).map(book => {
-        const coverUpdatedOn = patchMap.get(book.id);
-        return coverUpdatedOn && book.metadata
-          ? {...book, metadata: {...book.metadata, coverUpdatedOn}}
-          : book;
+        const patch = patchMap.get(book.id);
+        if (!patch || !book.metadata) return book;
+        return {
+          ...book,
+          metadata: {
+            ...book.metadata,
+            ...('coverUpdatedOn' in patch ? {coverUpdatedOn: patch.coverUpdatedOn ?? undefined} : {}),
+            ...('audiobookCoverUpdatedOn' in patch ? {audiobookCoverUpdatedOn: patch.audiobookCoverUpdatedOn ?? undefined} : {}),
+          },
+        };
       })
     );
     patchAppBooksCoverInCache(this.queryClient, patches);

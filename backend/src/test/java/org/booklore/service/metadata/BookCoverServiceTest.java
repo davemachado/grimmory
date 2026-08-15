@@ -95,6 +95,23 @@ class BookCoverServiceTest {
                 .build();
     }
 
+    private BookEntity buildAudiobook(long id, boolean audiobookCoverLocked) {
+        BookMetadataEntity metadata = BookMetadataEntity.builder()
+                .title("Test Audiobook")
+                .coverLocked(false)
+                .audiobookCoverLocked(audiobookCoverLocked)
+                .build();
+        BookFileEntity audiobookFile = BookFileEntity.builder()
+                .bookType(BookFileType.AUDIOBOOK)
+                .build();
+        return BookEntity.builder()
+                .id(id)
+                .metadata(metadata)
+                .library(LibraryEntity.builder().build())
+                .bookFiles(new HashSet<>(Set.of(audiobookFile)))
+                .build();
+    }
+
     @Nested
     class BookNotFound {
 
@@ -704,6 +721,33 @@ class BookCoverServiceTest {
 
             verify(taskExecutor).execute(any(Runnable.class));
         }
+
+        @Test
+        void regeneratesAudiobookCoverAndBumpsAudiobookTimestampForAudiobooks() {
+            BookEntity audiobook = buildAudiobook(1L, false);
+
+            when(bookQueryService.findAllWithMetadataByIds(Set.of(1L))).thenReturn(List.of(audiobook));
+            when(bookRepository.findByIdWithBookFiles(1L)).thenReturn(Optional.of(audiobook));
+            when(transactionTemplate.execute(any())).thenAnswer(inv ->
+                    inv.getArgument(0, TransactionCallback.class).doInTransaction(null));
+
+            BookFileProcessor processor = mock(BookFileProcessor.class);
+            when(processorRegistry.getProcessorOrThrow(BookFileType.AUDIOBOOK)).thenReturn(processor);
+            when(processor.generateAudiobookCover(audiobook)).thenReturn(true);
+
+            doAnswer(inv -> {
+                inv.<Runnable>getArgument(0).run();
+                return null;
+            }).when(taskExecutor).execute(any(Runnable.class));
+
+            service.regenerateCoversForBooks(Set.of(1L));
+
+            verify(processor).generateAudiobookCover(audiobook);
+            verify(processor, never()).generateCover(any(BookEntity.class));
+            assertThat(audiobook.getMetadata().getAudiobookCoverUpdatedOn()).isNotNull();
+            assertThat(audiobook.getMetadata().getCoverUpdatedOn()).isNull();
+            verify(bookRepository).save(audiobook);
+        }
     }
 
     @Nested
@@ -725,6 +769,53 @@ class BookCoverServiceTest {
             service.generateCustomCoversForBooks(Set.of(1L, 2L));
 
             verify(taskExecutor).execute(any(Runnable.class));
+        }
+
+        @Test
+        void generatesSquareAudiobookCoverAndBumpsAudiobookTimestampForAudiobooks() {
+            BookEntity audiobook = buildAudiobook(1L, false);
+
+            when(bookQueryService.findAllWithMetadataByIds(Set.of(1L))).thenReturn(List.of(audiobook));
+            when(bookRepository.findByIdWithBookFiles(1L)).thenReturn(Optional.of(audiobook));
+            when(transactionTemplate.execute(any())).thenAnswer(inv ->
+                    inv.getArgument(0, TransactionCallback.class).doInTransaction(null));
+            when(coverImageGenerator.generateSquareCover(any(), any())).thenReturn(new byte[]{1, 2, 3});
+
+            doAnswer(inv -> {
+                inv.<Runnable>getArgument(0).run();
+                return null;
+            }).when(taskExecutor).execute(any(Runnable.class));
+
+            service.generateCustomCoversForBooks(Set.of(1L));
+
+            verify(coverImageGenerator).generateSquareCover("Test Audiobook", null);
+            verify(coverImageGenerator, never()).generateCover(any(), any());
+            verify(fileService).createAudiobookThumbnailFromBytes(eq(1L), any());
+            verify(fileService, never()).createThumbnailFromBytes(anyLong(), any());
+            assertThat(audiobook.getMetadata().getAudiobookCoverUpdatedOn()).isNotNull();
+            assertThat(audiobook.getMetadata().getCoverUpdatedOn()).isNull();
+            verify(bookRepository).save(audiobook);
+        }
+
+        @Test
+        void skipsAudiobooksWithLockedAudiobookCover() {
+            BookEntity audiobook = buildAudiobook(1L, true);
+
+            when(bookQueryService.findAllWithMetadataByIds(Set.of(1L))).thenReturn(List.of(audiobook));
+            when(bookRepository.findByIdWithBookFiles(1L)).thenReturn(Optional.of(audiobook));
+            when(transactionTemplate.execute(any())).thenAnswer(inv ->
+                    inv.getArgument(0, TransactionCallback.class).doInTransaction(null));
+
+            doAnswer(inv -> {
+                inv.<Runnable>getArgument(0).run();
+                return null;
+            }).when(taskExecutor).execute(any(Runnable.class));
+
+            service.generateCustomCoversForBooks(Set.of(1L));
+
+            verify(coverImageGenerator, never()).generateSquareCover(any(), any());
+            verify(bookRepository, never()).save(any());
+            assertThat(audiobook.getMetadata().getAudiobookCoverUpdatedOn()).isNull();
         }
     }
 

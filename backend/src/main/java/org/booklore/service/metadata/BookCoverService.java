@@ -393,9 +393,19 @@ public class BookCoverService {
 
                     transactionTemplate.execute(status -> {
                         bookRepository.findByIdWithBookFiles(bookInfo.id()).ifPresent(book -> {
-                            fileService.createThumbnailFromBytes(bookInfo.id(), coverImageBytes);
-                            writeCoverToBookFile(book, (writer, b) -> writer.replaceCoverImageFromBytes(b, coverImageBytes));
-                            updateBookCoverMetadata(book);
+                            if (isAudiobookCover(book)) {
+                                if (isAudiobookCoverLocked(book)) {
+                                    log.info("{}Skipping book ID {} ({}) - audiobook cover is locked", progress, book.getId(), bookInfo.title());
+                                    return;
+                                }
+                                fileService.createAudiobookThumbnailFromBytes(book.getId(), coverImageBytes);
+                                writeAudiobookCoverToFile(book, (writer, b) -> writer.replaceCoverImageFromBytes(b, coverImageBytes));
+                                updateAudiobookCoverMetadata(book);
+                            } else {
+                                fileService.createThumbnailFromBytes(book.getId(), coverImageBytes);
+                                writeCoverToBookFile(book, (writer, b) -> writer.replaceCoverImageFromBytes(b, coverImageBytes));
+                                updateBookCoverMetadata(book);
+                            }
                             bookRepository.save(book);
                             notifyBulkCoverUpdate(List.of(book.getId()), username);
                         });
@@ -435,11 +445,20 @@ public class BookCoverService {
                                 log.warn("{}Skipping book ID {} ({}) - no primary file", progress, book.getId(), bookInfo.title());
                                 return;
                             }
+                            boolean audiobookCover = isAudiobookCover(book);
+                            if (audiobookCover && isAudiobookCoverLocked(book)) {
+                                log.info("{}Skipping book ID {} ({}) - audiobook cover is locked", progress, book.getId(), bookInfo.title());
+                                return;
+                            }
                             BookFileProcessor processor = processorRegistry.getProcessorOrThrow(primaryFile.getBookType());
-                            boolean success = processor.generateCover(book);
+                            boolean success = audiobookCover ? processor.generateAudiobookCover(book) : processor.generateCover(book);
 
                             if (success) {
-                                updateBookCoverMetadata(book);
+                                if (audiobookCover) {
+                                    updateAudiobookCoverMetadata(book);
+                                } else {
+                                    updateBookCoverMetadata(book);
+                                }
                                 bookRepository.save(book);
                                 notifyBulkCoverUpdate(List.of(book.getId()), username);
                             }
@@ -477,11 +496,22 @@ public class BookCoverService {
                         bookRepository.findByIdWithBookFiles(bookInfo.id()).ifPresent(book -> {
                             String title = book.getMetadata().getTitle();
                             String author = getAuthorNames(book);
-                            byte[] coverBytes = coverImageGenerator.generateCover(title, author);
 
-                            fileService.createThumbnailFromBytes(book.getId(), coverBytes);
-                            writeCoverToBookFile(book, (writer, b) -> writer.replaceCoverImageFromBytes(b, coverBytes));
-                            updateBookCoverMetadata(book);
+                            if (isAudiobookCover(book)) {
+                                if (isAudiobookCoverLocked(book)) {
+                                    log.info("{}Skipping book ID {} ({}) - audiobook cover is locked", progress, book.getId(), bookInfo.title());
+                                    return;
+                                }
+                                byte[] coverBytes = coverImageGenerator.generateSquareCover(title, author);
+                                fileService.createAudiobookThumbnailFromBytes(book.getId(), coverBytes);
+                                writeAudiobookCoverToFile(book, (writer, b) -> writer.replaceCoverImageFromBytes(b, coverBytes));
+                                updateAudiobookCoverMetadata(book);
+                            } else {
+                                byte[] coverBytes = coverImageGenerator.generateCover(title, author);
+                                fileService.createThumbnailFromBytes(book.getId(), coverBytes);
+                                writeCoverToBookFile(book, (writer, b) -> writer.replaceCoverImageFromBytes(b, coverBytes));
+                                updateBookCoverMetadata(book);
+                            }
                             bookRepository.save(book);
                             notifyBulkCoverUpdate(List.of(book.getId()), username);
                         });
@@ -571,6 +601,17 @@ public class BookCoverService {
 
     private boolean isAudiobookCoverLocked(BookEntity book) {
         return book.getMetadata() != null && Boolean.TRUE.equals(book.getMetadata().getAudiobookCoverLocked());
+    }
+
+    /**
+     * A book's displayed cover is its audiobook cover when its primary file is an audiobook.
+     * Bulk cover operations must route these books through the audiobook cover path so the
+     * audiobook cover file and {@code audiobookCoverUpdatedOn} timestamp are updated (not the
+     * ebook cover), otherwise the change is never reflected in the UI.
+     */
+    private boolean isAudiobookCover(BookEntity book) {
+        BookFileEntity primaryFile = book.getPrimaryBookFile();
+        return primaryFile != null && primaryFile.getBookType() == BookFileType.AUDIOBOOK;
     }
 
     private String getAuthorNames(BookEntity bookEntity) {
