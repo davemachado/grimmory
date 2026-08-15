@@ -398,6 +398,7 @@ export class MagicShelfComponent implements OnInit {
       { label: this.t.translate('magicShelf.metadataFieldGroups.externalIds'), items: [
         {label: this.t.translate('magicShelf.metadataFields.goodreadsId'), value: 'goodreadsId'},
         {label: this.t.translate('magicShelf.metadataFields.hardcoverId'), value: 'hardcoverId'},
+        {label: this.t.translate('magicShelf.metadataFields.hardcoverBookId'), value: 'hardcoverBookId'},
         {label: this.t.translate('magicShelf.metadataFields.googleId'), value: 'googleId'},
         {label: this.t.translate('magicShelf.metadataFields.audibleId'), value: 'audibleId'},
         {label: this.t.translate('magicShelf.metadataFields.lubimyczytacId'), value: 'lubimyczytacId'},

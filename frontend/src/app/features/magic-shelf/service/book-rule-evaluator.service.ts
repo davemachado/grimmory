@@ -542,6 +542,7 @@ export class BookRuleEvaluatorService {
       case 'audibleReviewCount': return book.metadata?.audibleReviewCount;
       case 'goodreadsId': return book.metadata?.goodreadsId;
       case 'hardcoverId': return book.metadata?.hardcoverId;
+      case 'hardcoverBookId': return book.metadata?.hardcoverBookId;
       case 'googleId': return book.metadata?.googleId;
       case 'audibleId': return book.metadata?.audibleId;
       case 'lubimyczytacId': return book.metadata?.lubimyczytacId;
