@@ -328,6 +328,16 @@ describe('BookRuleEvaluatorService - metadataPresence', () => {
       expect(service.evaluateGroup(book, rule('equals', 'hardcoverId'))).toBe(true);
     });
 
+    it('should detect present hardcoverBookId', () => {
+      const book = createBook({metadata: {bookId: 1, hardcoverBookId: 789}});
+      expect(service.evaluateGroup(book, rule('equals', 'hardcoverBookId'))).toBe(true);
+    });
+
+    it('should detect missing hardcoverBookId', () => {
+      const book = createBook({metadata: {bookId: 1}});
+      expect(service.evaluateGroup(book, rule('not_equals', 'hardcoverBookId'))).toBe(true);
+    });
+
     it('should detect present googleId', () => {
       const book = createBook({metadata: {bookId: 1, googleId: 'gid-456'}});
       expect(service.evaluateGroup(book, rule('equals', 'googleId'))).toBe(true);
