@@ -117,15 +117,18 @@ class BookSearchSpecificationTest {
     @Test
     void matching_returnsAllBooks_whenQueryIsNullEmptyOrBlank() {
         LibraryEntity library = persistLibrary();
-        BookEntity book = persistBook(library, "Some Title", "some-file.epub");
+        BookEntity first = persistBook(library, "Some Title", "some-file.epub");
+        BookEntity second = persistBook(library, "Another Title", "another-file.pdf");
 
         entityManager.flush();
         entityManager.clear();
 
-        // A null/blank query short-circuits to cb.conjunction(); every persisted book must match.
+        // A null/blank query short-circuits to cb.conjunction(); every persisted book must match,
+        // not just one, so assert the full set is returned.
         for (String blank : Arrays.asList(null, "", "   ")) {
             List<BookEntity> results = bookRepository.findAll(BookSearchSpecification.matching(blank));
-            assertThat(results).extracting(BookEntity::getId).contains(book.getId());
+            assertThat(results).extracting(BookEntity::getId)
+                    .containsExactlyInAnyOrder(first.getId(), second.getId());
         }
     }
 
