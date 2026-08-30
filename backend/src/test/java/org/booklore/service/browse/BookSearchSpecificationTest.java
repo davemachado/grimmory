@@ -19,6 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -111,6 +112,21 @@ class BookSearchSpecificationTest {
         List<BookEntity> results = bookRepository.findAll(BookSearchSpecification.matching("nonexistent"));
 
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    void matching_returnsAllBooks_whenQueryIsNullEmptyOrBlank() {
+        LibraryEntity library = persistLibrary();
+        BookEntity book = persistBook(library, "Some Title", "some-file.epub");
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // A null/blank query short-circuits to cb.conjunction(); every persisted book must match.
+        for (String blank : Arrays.asList(null, "", "   ")) {
+            List<BookEntity> results = bookRepository.findAll(BookSearchSpecification.matching(blank));
+            assertThat(results).extracting(BookEntity::getId).contains(book.getId());
+        }
     }
 
     @Test
