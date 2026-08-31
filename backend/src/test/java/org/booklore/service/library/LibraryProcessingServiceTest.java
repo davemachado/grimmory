@@ -556,6 +556,7 @@ class LibraryProcessingServiceTest {
         existingBookFile.setFileSubPath("");
         existingBookFile.setFileName("book1.epub");
         existingBookFile.setFileSizeKb(1L); // stale size before the in-place edit
+        existingBookFile.setCurrentHash("stale-hash"); // stale hash to be replaced
         existingBook.setBookFiles(Set.of(existingBookFile));
         libraryEntity.setBookEntities(List.of(existingBook));
 
@@ -577,7 +578,7 @@ class LibraryProcessingServiceTest {
         libraryProcessingService.rescanLibrary(RescanLibraryContext.builder().libraryId(libraryId).build());
 
         assertThat(existingBookFile.getFileSizeKb()).isEqualTo(4L);
-        assertThat(existingBookFile.getCurrentHash()).isNotBlank();
+        assertThat(existingBookFile.getCurrentHash()).isNotBlank().isNotEqualTo("stale-hash");
         verify(bookAdditionalFileRepository).save(existingBookFile);
     }
 
@@ -657,6 +658,7 @@ class LibraryProcessingServiceTest {
         existingBookFile.setFileSubPath("");
         existingBookFile.setFileName("book1.epub");
         existingBookFile.setFileSizeKb(null); // never recorded (legacy row)
+        existingBookFile.setCurrentHash("stale-hash"); // stale hash to be replaced
         existingBook.setBookFiles(Set.of(existingBookFile));
         libraryEntity.setBookEntities(List.of(existingBook));
 
@@ -678,7 +680,7 @@ class LibraryProcessingServiceTest {
         libraryProcessingService.rescanLibrary(RescanLibraryContext.builder().libraryId(libraryId).build());
 
         assertThat(existingBookFile.getFileSizeKb()).isEqualTo(4L);
-        assertThat(existingBookFile.getCurrentHash()).isNotBlank();
+        assertThat(existingBookFile.getCurrentHash()).isNotBlank().isNotEqualTo("stale-hash");
         verify(bookAdditionalFileRepository).save(existingBookFile);
     }
 
@@ -710,6 +712,7 @@ class LibraryProcessingServiceTest {
         existingBookFile.setFileName("audiobook");
         existingBookFile.setFolderBased(true);
         existingBookFile.setFileSizeKb(1L); // stale size before the in-place edit
+        existingBookFile.setCurrentHash("stale-hash"); // stale hash to be replaced
         existingBook.setBookFiles(Set.of(existingBookFile));
         libraryEntity.setBookEntities(List.of(existingBook));
 
@@ -732,7 +735,56 @@ class LibraryProcessingServiceTest {
         libraryProcessingService.rescanLibrary(RescanLibraryContext.builder().libraryId(libraryId).build());
 
         assertThat(existingBookFile.getFileSizeKb()).isEqualTo(5L);
-        assertThat(existingBookFile.getCurrentHash()).isNotBlank();
+        assertThat(existingBookFile.getCurrentHash()).isNotBlank().isNotEqualTo("stale-hash");
+        verify(bookAdditionalFileRepository).save(existingBookFile);
+    }
+
+    @Test
+    void rescanLibrary_shouldConvertExactKilobyteSize(@TempDir Path tempDir) throws IOException {
+        long libraryId = 1L;
+        Path accessiblePath = tempDir.resolve("accessible");
+        Files.createDirectory(accessiblePath);
+        Path bookFileOnDisk = accessiblePath.resolve("book1.epub");
+        Files.write(bookFileOnDisk, new byte[1024]); // exactly 1 KiB -> 1 KB
+
+        LibraryEntity libraryEntity = new LibraryEntity();
+        libraryEntity.setId(libraryId);
+        libraryEntity.setName("Test Library");
+
+        LibraryPathEntity pathEntity = new LibraryPathEntity();
+        pathEntity.setId(10L);
+        pathEntity.setPath(accessiblePath.toString());
+        libraryEntity.setLibraryPaths(List.of(pathEntity));
+
+        BookEntity existingBook = new BookEntity();
+        existingBook.setId(1L);
+        existingBook.setLibraryPath(pathEntity);
+        BookFileEntity existingBookFile = new BookFileEntity();
+        existingBookFile.setBook(existingBook);
+        existingBookFile.setFileSubPath("");
+        existingBookFile.setFileName("book1.epub");
+        existingBookFile.setFileSizeKb(5L); // stale size before the in-place edit
+        existingBook.setBookFiles(Set.of(existingBookFile));
+        libraryEntity.setBookEntities(List.of(existingBook));
+
+        LibraryFile fileOnDisk = LibraryFile.builder()
+                .libraryEntity(libraryEntity)
+                .libraryPathEntity(pathEntity)
+                .fileSubPath("")
+                .fileName("book1.epub")
+                .build();
+
+        when(libraryRepository.findByIdWithPaths(libraryId)).thenReturn(Optional.of(libraryEntity));
+        when(bookRepository.findAllByLibraryIdForRescan(libraryId)).thenReturn(List.of(existingBook));
+        when(libraryFileHelper.getAllLibraryFiles(libraryEntity)).thenReturn(List.of(fileOnDisk));
+        when(libraryFileHelper.filterByAllowedFormats(anyList(), any())).thenAnswer(inv -> inv.getArgument(0));
+        when(bookAdditionalFileRepository.findByLibraryId(libraryId)).thenReturn(Collections.emptyList());
+        when(bookGroupingService.groupForRescan(anyList(), any(LibraryEntity.class)))
+                .thenReturn(new BookGroupingService.GroupingResult(Collections.emptyMap(), Collections.emptyMap()));
+
+        libraryProcessingService.rescanLibrary(RescanLibraryContext.builder().libraryId(libraryId).build());
+
+        assertThat(existingBookFile.getFileSizeKb()).isEqualTo(1L);
         verify(bookAdditionalFileRepository).save(existingBookFile);
     }
 
