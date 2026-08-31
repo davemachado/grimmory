@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -86,6 +87,24 @@ class AppSettingServiceTest {
                 AppSettingKey.OIDC_PROVIDER_DETAILS,
                 Map.of("clientId", "grimmory")
         );
+
+        ArgumentCaptor<AppSettingEntity> settingCaptor = ArgumentCaptor.forClass(AppSettingEntity.class);
+        verify(appSettingsRepository).save(settingCaptor.capture());
+        assertThat(settingCaptor.getValue().getVal()).contains("\"clientSecret\":\"super-secret\"");
+    }
+
+    @Test
+    void updateSetting_keepsStoredClientSecretWhenIncomingSecretIsNull() throws Exception {
+        AppSettingEntity stored = new AppSettingEntity();
+        stored.setName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString());
+        stored.setVal("{\"clientId\":\"grimmory\",\"clientSecret\":\"super-secret\"}");
+        when(appSettingsRepository.findByName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString())).thenReturn(stored);
+
+        Map<String, Object> incoming = new HashMap<>();
+        incoming.put("clientId", "grimmory");
+        incoming.put("clientSecret", null);
+
+        appSettingService.updateSetting(AppSettingKey.OIDC_PROVIDER_DETAILS, incoming);
 
         ArgumentCaptor<AppSettingEntity> settingCaptor = ArgumentCaptor.forClass(AppSettingEntity.class);
         verify(appSettingsRepository).save(settingCaptor.capture());
