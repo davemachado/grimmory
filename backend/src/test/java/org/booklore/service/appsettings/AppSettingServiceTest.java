@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -55,6 +56,57 @@ class AppSettingServiceTest {
                 .build();
 
         when(authenticationService.getAuthenticatedUser()).thenReturn(user);
+    }
+
+    @Test
+    void updateSetting_keepsStoredClientSecretWhenIncomingSecretIsBlank() throws Exception {
+        AppSettingEntity stored = new AppSettingEntity();
+        stored.setName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString());
+        stored.setVal("{\"clientId\":\"grimmory\",\"clientSecret\":\"super-secret\"}");
+        when(appSettingsRepository.findByName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString())).thenReturn(stored);
+
+        appSettingService.updateSetting(
+                AppSettingKey.OIDC_PROVIDER_DETAILS,
+                Map.of("clientId", "grimmory", "clientSecret", "")
+        );
+
+        ArgumentCaptor<AppSettingEntity> settingCaptor = ArgumentCaptor.forClass(AppSettingEntity.class);
+        verify(appSettingsRepository).save(settingCaptor.capture());
+        assertThat(settingCaptor.getValue().getVal()).contains("\"clientSecret\":\"super-secret\"");
+    }
+
+    @Test
+    void updateSetting_keepsStoredClientSecretWhenIncomingSecretIsMissing() throws Exception {
+        AppSettingEntity stored = new AppSettingEntity();
+        stored.setName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString());
+        stored.setVal("{\"clientId\":\"grimmory\",\"clientSecret\":\"super-secret\"}");
+        when(appSettingsRepository.findByName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString())).thenReturn(stored);
+
+        appSettingService.updateSetting(
+                AppSettingKey.OIDC_PROVIDER_DETAILS,
+                Map.of("clientId", "grimmory")
+        );
+
+        ArgumentCaptor<AppSettingEntity> settingCaptor = ArgumentCaptor.forClass(AppSettingEntity.class);
+        verify(appSettingsRepository).save(settingCaptor.capture());
+        assertThat(settingCaptor.getValue().getVal()).contains("\"clientSecret\":\"super-secret\"");
+    }
+
+    @Test
+    void updateSetting_updatesClientSecretWhenNewSecretProvided() throws Exception {
+        AppSettingEntity stored = new AppSettingEntity();
+        stored.setName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString());
+        stored.setVal("{\"clientId\":\"grimmory\",\"clientSecret\":\"old-secret\"}");
+        when(appSettingsRepository.findByName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString())).thenReturn(stored);
+
+        appSettingService.updateSetting(
+                AppSettingKey.OIDC_PROVIDER_DETAILS,
+                Map.of("clientId", "grimmory", "clientSecret", "new-secret")
+        );
+
+        ArgumentCaptor<AppSettingEntity> settingCaptor = ArgumentCaptor.forClass(AppSettingEntity.class);
+        verify(appSettingsRepository).save(settingCaptor.capture());
+        assertThat(settingCaptor.getValue().getVal()).contains("\"clientSecret\":\"new-secret\"");
     }
 
     @Test

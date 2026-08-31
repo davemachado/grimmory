@@ -81,6 +81,25 @@ public class SettingPersistenceHelper {
         return key.isJson() ? objectMapper.writeValueAsString(val) : val.toString();
     }
 
+    public OidcProviderDetails convertOidcProviderDetails(Object value) {
+        if (value == null) {
+            return null;
+        }
+        return objectMapper.convertValue(value, OidcProviderDetails.class);
+    }
+
+    public OidcProviderDetails readOidcProviderDetails(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, OidcProviderDetails.class);
+        } catch (JacksonException e) {
+            log.error("Failed to parse stored OIDC provider details. Error: {}", e.getMessage());
+            return null;
+        }
+    }
+
     public MetadataProviderSettings getDefaultMetadataProviderSettings() {
         MetadataProviderSettings defaultMetadataProviderSettings = new MetadataProviderSettings();
 

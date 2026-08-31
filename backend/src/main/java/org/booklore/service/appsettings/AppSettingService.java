@@ -66,6 +66,10 @@ public class AppSettingService {
             val = validateAndNormalizeOidcRedirectUris(val);
         }
 
+        if (key == AppSettingKey.OIDC_PROVIDER_DETAILS) {
+            val = preserveExistingOidcClientSecret(val);
+        }
+
         if (key == AppSettingKey.OIDC_FORCE_ONLY_MODE) {
             validateOidcForceOnlyMode(val);
         }
@@ -84,6 +88,31 @@ public class AppSettingService {
             default -> AuditAction.SETTINGS_UPDATED;
         };
         auditService.log(action, "Updated setting: " + key);
+    }
+
+    /**
+     * The client secret is never sent back to the UI (see {@link #buildPublicSetting()}), so the OIDC
+     * provider form saves with a blank secret whenever the admin edits other fields without re-entering it.
+     * Treat a blank/missing incoming secret as "unchanged" and keep the stored one instead of erasing it.
+     */
+    private Object preserveExistingOidcClientSecret(Object val) {
+        OidcProviderDetails incoming = settingPersistenceHelper.convertOidcProviderDetails(val);
+        if (incoming == null || (incoming.getClientSecret() != null && !incoming.getClientSecret().isBlank())) {
+            return val;
+        }
+
+        AppSettingEntity existing = settingPersistenceHelper.appSettingsRepository.findByName(AppSettingKey.OIDC_PROVIDER_DETAILS.toString());
+        if (existing == null) {
+            return val;
+        }
+
+        OidcProviderDetails stored = settingPersistenceHelper.readOidcProviderDetails(existing.getVal());
+        if (stored == null || stored.getClientSecret() == null || stored.getClientSecret().isBlank()) {
+            return val;
+        }
+
+        incoming.setClientSecret(stored.getClientSecret());
+        return incoming;
     }
 
     private void validateOidcForceOnlyMode(Object val) {
