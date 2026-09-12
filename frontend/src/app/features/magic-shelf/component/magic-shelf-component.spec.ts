@@ -540,6 +540,13 @@ describe('MagicShelfComponent (Part 3)', () => {
       expect(ruleCtrl.get('value')?.value).toBe('');
     });
 
+    it('should clear the single value when switching to in_between, which edits valueStart/valueEnd', () => {
+      const ruleCtrl = component.buildRuleFromData({field: 'dateFinished', operator: 'equals', value: '2026-07-24'});
+      ruleCtrl.get('operator')?.setValue('in_between');
+      component.onOperatorChange(ruleCtrl);
+      expect(ruleCtrl.get('value')?.value).toBe('');
+    });
+
     it('should preserve a value loaded from saved shelf data when switching to a compatible operator', () => {
       const ruleCtrl = component.buildRuleFromData({field: 'title', operator: 'contains', value: 'Harry Potter'});
       ruleCtrl.get('operator')?.setValue('starts_with');
