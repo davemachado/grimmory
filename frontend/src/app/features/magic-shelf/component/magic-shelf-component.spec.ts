@@ -469,6 +469,17 @@ describe('MagicShelfComponent (Part 3)', () => {
       expect(ruleCtrl.get('value')?.value).toBe('15');
     });
 
+    it('should preserve a valid period and clear valueStart/valueEnd when re-selecting this_period', () => {
+      const ruleCtrl = component.buildRuleFromData({field: 'addedOn', operator: 'this_period', value: 'month'});
+      ruleCtrl.get('valueStart')?.setValue('stale-start');
+      ruleCtrl.get('valueEnd')?.setValue('stale-end');
+      ruleCtrl.get('operator')?.setValue('this_period');
+      component.onOperatorChange(ruleCtrl);
+      expect(ruleCtrl.get('value')?.value).toBe('month');
+      expect(ruleCtrl.get('valueStart')?.value).toBeNull();
+      expect(ruleCtrl.get('valueEnd')?.value).toBeNull();
+    });
+
     it('should preserve the value when switching between compatible single-value operators', () => {
       const ruleCtrl = component.buildRuleFromData({field: 'pageCount', operator: 'equals', value: 42});
       ruleCtrl.get('operator')?.setValue('greater_than_equal_to');
