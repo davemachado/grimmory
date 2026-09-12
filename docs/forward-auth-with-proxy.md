@@ -6,6 +6,8 @@ Grimmory supports **Forward Auth**, allowing you to specify when a user is logge
 
 **Important**: Enabling forward auth means Grimmory will **fully trust headers sent by the reverse proxy**. Never expose Grimmory directly to the internet when using forward auth - always route through your authenticated proxy, otherwise outsiders can attempt to impersonate any username they know about.
 
+See also: [Trusting a Reverse Proxy's Forwarded Headers](reverse-proxy-trust.md) - forward auth headers are only meaningful if Grimmory also trusts your proxy's `X-Forwarded-For`/`X-Forwarded-Proto`, which is a separate, IP-based trust setting.
+
 ## Configuration
 
 Provide Grimmory with the following environment variables:

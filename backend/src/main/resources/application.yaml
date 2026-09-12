@@ -67,6 +67,14 @@ server:
     mime-types: text/html,text/css,application/javascript,application/json,image/svg+xml,application/xml,application/atom+xml
     min-response-size: 1024
   tomcat:
+    remoteip:
+      # Proxies trusted to set X-Forwarded-For/-Proto. Default mirrors Tomcat's
+      # built-in RemoteIpValve default (RFC1918 ranges + loopback) - i.e. every
+      # default Docker Compose bridge network. Override wholesale via
+      # INTERNAL_PROXIES if your reverse proxy's peer address falls outside
+      # this range (host networking, macvlan, external LB/CDN edge). See
+      # docs/reverse-proxy-trust.md.
+      internal-proxies: '${INTERNAL_PROXIES:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1}'
     relaxed-query-chars: '[,],%,{,},|'
     threads:
       max: 10                      # Virtual threads handle concurrency; platform threads just overhead
