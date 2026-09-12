@@ -13,7 +13,7 @@ import {MessageService} from '@openng/optimus-ui/api';
 import {DynamicDialogConfig, DynamicDialogRef} from '@openng/optimus-ui/dynamicdialog';
 import {MultiSelect} from '@openng/optimus-ui/multiselect';
 import {AutoComplete} from '@openng/optimus-ui/autocomplete';
-import {EMPTY_CHECK_OPERATORS, MULTI_VALUE_OPERATORS, RELATIVE_DATE_OPERATORS, parseValue, removeNulls, serializeDateRules} from '../service/magic-shelf-utils';
+import {DATE_UNIT_VALUES, EMPTY_CHECK_OPERATORS, getOperatorValueKind, MULTI_VALUE_OPERATORS, RELATIVE_DATE_OPERATORS, parseValue, removeNulls, serializeDateRules} from '../service/magic-shelf-utils';
 import {IconPickerService} from '../../../shared/service/icon-picker.service';
 import {CheckboxChangeEvent, Checkbox} from "@openng/optimus-ui/checkbox";
 import {UserService} from "../../settings/user-management/user.service";
@@ -252,6 +252,7 @@ export class MagicShelfComponent implements OnInit {
   private readonly injector = inject(Injector);
   private readonly controlIds = new WeakMap<AbstractControl, string>();
   private controlIdCounter = 0;
+  private readonly previousOperators = new WeakMap<AbstractControl, RuleOperator | ''>();
 
   numericFieldConfigMap = new Map<RuleField, FieldConfig>(
     Object.entries(FIELD_CONFIGS)
@@ -584,13 +585,16 @@ export class MagicShelfComponent implements OnInit {
       valueEnd = parseValue(data.valueEnd, type);
     }
 
-    return new FormGroup({
+    const ruleFormGroup = new FormGroup({
       field: new FormControl<RuleField>(data.field),
       operator: new FormControl<RuleOperator>(data.operator),
       value: new FormControl(value),
       valueStart: new FormControl(valueStart),
       valueEnd: new FormControl(valueEnd),
     }) as RuleFormGroup;
+
+    this.previousOperators.set(ruleFormGroup, data.operator);
+    return ruleFormGroup;
   }
 
   get group(): GroupFormGroup {
@@ -675,13 +679,16 @@ export class MagicShelfComponent implements OnInit {
   }
 
   createRule(): RuleFormGroup {
-    return new FormGroup({
+    const ruleFormGroup = new FormGroup({
       field: new FormControl<RuleField | ''>(''),
       operator: new FormControl<RuleOperator | ''>(''),
       value: new FormControl<string | null>(null),
       valueStart: new FormControl<string | null>(null),
       valueEnd: new FormControl<string | null>(null),
     }) as RuleFormGroup;
+
+    this.previousOperators.set(ruleFormGroup, '');
+    return ruleFormGroup;
   }
 
   createGroup(): GroupFormGroup {
@@ -723,31 +730,44 @@ export class MagicShelfComponent implements OnInit {
 
   onOperatorChange(ruleCtrl: FormGroup) {
     const operator = ruleCtrl.get('operator')?.value as RuleOperator;
+    const previousOperator = this.previousOperators.get(ruleCtrl) ?? '';
+    this.previousOperators.set(ruleCtrl, operator);
 
     const valueCtrl = ruleCtrl.get('value');
     const valueStartCtrl = ruleCtrl.get('valueStart');
     const valueEndCtrl = ruleCtrl.get('valueEnd');
+    const sameKind = getOperatorValueKind(operator) === getOperatorValueKind(previousOperator);
 
     if (operator === 'within_last' || operator === 'older_than') {
-      valueCtrl?.setValue(null);
       valueStartCtrl?.setValue(null);
-      valueEndCtrl?.setValue('days');
+      if (!sameKind) {
+        valueCtrl?.setValue(null);
+        valueEndCtrl?.setValue('days');
+      } else if (!DATE_UNIT_VALUES.includes(valueEndCtrl?.value)) {
+        valueEndCtrl?.setValue('days');
+      }
     } else if (operator === 'this_period') {
-      valueCtrl?.setValue(null);
       valueStartCtrl?.setValue(null);
       valueEndCtrl?.setValue(null);
+      if (!sameKind) {
+        valueCtrl?.setValue(null);
+      }
     } else if (MULTI_VALUE_OPERATORS.includes(operator)) {
-      valueCtrl?.setValue([]);
       valueStartCtrl?.setValue(null);
       valueEndCtrl?.setValue(null);
+      if (!sameKind || !Array.isArray(valueCtrl?.value)) {
+        valueCtrl?.setValue([]);
+      }
     } else if (EMPTY_CHECK_OPERATORS.includes(operator)) {
       valueCtrl?.setValue(null);
       valueStartCtrl?.setValue(null);
       valueEndCtrl?.setValue(null);
     } else {
-      valueCtrl?.setValue('');
       valueStartCtrl?.setValue(null);
       valueEndCtrl?.setValue(null);
+      if (!sameKind) {
+        valueCtrl?.setValue('');
+      }
     }
   }
 
@@ -756,6 +776,7 @@ export class MagicShelfComponent implements OnInit {
     ruleCtrl.get('value')?.setValue(null);
     ruleCtrl.get('valueStart')?.setValue(null);
     ruleCtrl.get('valueEnd')?.setValue(null);
+    this.previousOperators.set(ruleCtrl, '');
   }
 
   openIconPicker() {

@@ -17,6 +17,19 @@ export const RELATIVE_DATE_OPERATORS: RuleOperator[] = [
   'this_period'
 ];
 
+export const DATE_UNIT_VALUES = ['days', 'weeks', 'months', 'years'];
+
+export type OperatorValueKind = 'unset' | 'none' | 'amountUnit' | 'period' | 'multi' | 'default';
+
+export function getOperatorValueKind(operator: RuleOperator | '' | null | undefined): OperatorValueKind {
+  if (!operator) return 'unset';
+  if (EMPTY_CHECK_OPERATORS.includes(operator)) return 'none';
+  if (operator === 'within_last' || operator === 'older_than') return 'amountUnit';
+  if (operator === 'this_period') return 'period';
+  if (MULTI_VALUE_OPERATORS.includes(operator)) return 'multi';
+  return 'default';
+}
+
 function parseDate(val: unknown): Date | null {
   if (typeof val === "string") {
     if (val.match("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")) {
