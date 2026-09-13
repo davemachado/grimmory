@@ -2,11 +2,13 @@ package org.booklore.service.library;
 
 import jakarta.persistence.EntityManager;
 import org.booklore.exception.APIException;
+import org.booklore.mapper.BookMapper;
 import org.booklore.model.dto.settings.LibraryFile;
 import org.booklore.model.entity.BookEntity;
 import org.booklore.model.entity.BookFileEntity;
 import org.booklore.model.entity.LibraryEntity;
 import org.booklore.model.entity.LibraryPathEntity;
+import org.booklore.model.websocket.Topic;
 import org.booklore.repository.BookAdditionalFileRepository;
 import org.booklore.repository.BookRepository;
 import org.booklore.repository.LibraryRepository;
@@ -54,6 +56,8 @@ class LibraryProcessingServiceTest {
     @Mock
     private BookCoverGenerator bookCoverGenerator;
     @Mock
+    private BookMapper bookMapper;
+    @Mock
     private EntityManager entityManager;
 
     private LibraryProcessingService libraryProcessingService;
@@ -71,6 +75,7 @@ class LibraryProcessingServiceTest {
                 libraryFileHelper,
                 bookGroupingService,
                 bookCoverGenerator,
+                bookMapper,
                 entityManager
         );
     }
@@ -580,6 +585,7 @@ class LibraryProcessingServiceTest {
         assertThat(existingBookFile.getFileSizeKb()).isEqualTo(4L);
         assertThat(existingBookFile.getCurrentHash()).isNotBlank().isNotEqualTo("stale-hash");
         verify(bookAdditionalFileRepository).save(existingBookFile);
+        verify(notificationService).sendMessage(eq(Topic.BOOK_UPDATE), any());
     }
 
     @Test
@@ -631,6 +637,7 @@ class LibraryProcessingServiceTest {
         assertThat(existingBookFile.getFileSizeKb()).isEqualTo(4L);
         assertThat(existingBookFile.getCurrentHash()).isEqualTo("unchanged-hash");
         verify(bookAdditionalFileRepository, never()).save(any());
+        verify(notificationService, never()).sendMessage(eq(Topic.BOOK_UPDATE), any());
     }
 
     @Test
@@ -682,6 +689,7 @@ class LibraryProcessingServiceTest {
         assertThat(existingBookFile.getFileSizeKb()).isEqualTo(4L);
         assertThat(existingBookFile.getCurrentHash()).isNotBlank().isNotEqualTo("stale-hash");
         verify(bookAdditionalFileRepository).save(existingBookFile);
+        verify(notificationService).sendMessage(eq(Topic.BOOK_UPDATE), any());
     }
 
     @Test
@@ -737,6 +745,92 @@ class LibraryProcessingServiceTest {
         assertThat(existingBookFile.getFileSizeKb()).isEqualTo(5L);
         assertThat(existingBookFile.getCurrentHash()).isNotBlank().isNotEqualTo("stale-hash");
         verify(bookAdditionalFileRepository).save(existingBookFile);
+        verify(notificationService).sendMessage(eq(Topic.BOOK_UPDATE), any());
+    }
+
+    @Test
+    void rescanLibrary_shouldIsolateSyncFailureToTheOffendingBook(@TempDir Path tempDir) throws IOException {
+        long libraryId = 1L;
+        Path accessiblePath = tempDir.resolve("accessible");
+        Files.createDirectory(accessiblePath);
+
+        // Folder-based book whose size changed but contains no audio files, so hash
+        // regeneration throws. This must not prevent the other book below from syncing.
+        Path badAudiobookFolder = accessiblePath.resolve("bad-audiobook");
+        Files.createDirectory(badAudiobookFolder);
+        Files.write(badAudiobookFolder.resolve("notes.txt"), new byte[5000]);
+
+        Path goodBookFileOnDisk = accessiblePath.resolve("book1.epub");
+        Files.write(goodBookFileOnDisk, new byte[5000]); // 5000 bytes -> 4 KB
+
+        LibraryEntity libraryEntity = new LibraryEntity();
+        libraryEntity.setId(libraryId);
+        libraryEntity.setName("Test Library");
+
+        LibraryPathEntity pathEntity = new LibraryPathEntity();
+        pathEntity.setId(10L);
+        pathEntity.setPath(accessiblePath.toString());
+        libraryEntity.setLibraryPaths(List.of(pathEntity));
+
+        BookEntity badBook = new BookEntity();
+        badBook.setId(1L);
+        badBook.setLibraryPath(pathEntity);
+        BookFileEntity badBookFile = new BookFileEntity();
+        badBookFile.setBook(badBook);
+        badBookFile.setFileSubPath("");
+        badBookFile.setFileName("bad-audiobook");
+        badBookFile.setFolderBased(true);
+        badBookFile.setFileSizeKb(1L); // stale, forces a hash regeneration attempt
+        badBookFile.setCurrentHash("stale-hash");
+        badBook.setBookFiles(Set.of(badBookFile));
+
+        BookEntity goodBook = new BookEntity();
+        goodBook.setId(2L);
+        goodBook.setLibraryPath(pathEntity);
+        BookFileEntity goodBookFile = new BookFileEntity();
+        goodBookFile.setBook(goodBook);
+        goodBookFile.setFileSubPath("");
+        goodBookFile.setFileName("book1.epub");
+        goodBookFile.setFileSizeKb(1L); // stale size before the in-place edit
+        goodBookFile.setCurrentHash("stale-hash");
+        goodBook.setBookFiles(Set.of(goodBookFile));
+
+        libraryEntity.setBookEntities(List.of(badBook, goodBook));
+
+        LibraryFile badFileOnDisk = LibraryFile.builder()
+                .libraryEntity(libraryEntity)
+                .libraryPathEntity(pathEntity)
+                .fileSubPath("")
+                .fileName("bad-audiobook")
+                .folderBased(true)
+                .build();
+        LibraryFile goodFileOnDisk = LibraryFile.builder()
+                .libraryEntity(libraryEntity)
+                .libraryPathEntity(pathEntity)
+                .fileSubPath("")
+                .fileName("book1.epub")
+                .build();
+
+        when(libraryRepository.findByIdWithPaths(libraryId)).thenReturn(Optional.of(libraryEntity));
+        when(bookRepository.findAllByLibraryIdForRescan(libraryId)).thenReturn(List.of(badBook, goodBook));
+        when(libraryFileHelper.getAllLibraryFiles(libraryEntity)).thenReturn(List.of(badFileOnDisk, goodFileOnDisk));
+        when(libraryFileHelper.filterByAllowedFormats(anyList(), any())).thenAnswer(inv -> inv.getArgument(0));
+        when(bookAdditionalFileRepository.findByLibraryId(libraryId)).thenReturn(Collections.emptyList());
+        when(bookGroupingService.groupForRescan(anyList(), any(LibraryEntity.class)))
+                .thenReturn(new BookGroupingService.GroupingResult(Collections.emptyMap(), Collections.emptyMap()));
+
+        libraryProcessingService.rescanLibrary(RescanLibraryContext.builder().libraryId(libraryId).build());
+
+        // Bad book is left untouched rather than aborting the whole sync.
+        assertThat(badBookFile.getFileSizeKb()).isEqualTo(1L);
+        assertThat(badBookFile.getCurrentHash()).isEqualTo("stale-hash");
+        verify(bookAdditionalFileRepository, never()).save(badBookFile);
+
+        // Good book still gets synced and notified despite the other book's failure.
+        assertThat(goodBookFile.getFileSizeKb()).isEqualTo(4L);
+        assertThat(goodBookFile.getCurrentHash()).isNotBlank().isNotEqualTo("stale-hash");
+        verify(bookAdditionalFileRepository).save(goodBookFile);
+        verify(notificationService).sendMessage(eq(Topic.BOOK_UPDATE), any());
     }
 
     @Test
