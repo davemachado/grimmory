@@ -15,5 +15,10 @@ jobs:
     steps:
       - name: Fast-forward develop from grimmory-tools/grimmory
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The default GITHUB_TOKEN can never write .github/workflows/* files,
+          # regardless of the permissions block above. Upstream regularly touches
+          # workflow files (e.g. dependabot version bumps), which makes syncs fail
+          # with "Upstream commits contain workflow changes...". A PAT with the
+          # `repo` and `workflow` scopes is required instead.
+          GH_TOKEN: ${{ secrets.SYNC_FORK_PAT }}
         run: gh repo sync davemachado/grimmory -b develop
