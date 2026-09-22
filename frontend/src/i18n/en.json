@@ -712,7 +712,7 @@
     },
     "publicReviews": {
       "sectionTitle": "Public Reviews",
-      "sectionDesc": "Configure automatic downloading of user reviews from external platforms. Reviews can be fetched from Amazon, Goodreads, and Hardcover for offline access.",
+      "sectionDesc": "Configure automatic downloading of user reviews from external platforms for offline access.",
       "downloadLabel": "Download Public Reviews",
       "autoDownloadLabel": "Auto Download on Book Open",
       "autoDownloadDesc": "Automatically fetch reviews when you open a book's details page. When disabled, reviews will only be downloaded manually or during metadata refresh.",
@@ -751,62 +751,13 @@
         "isbn13": "ISBN-13",
         "isbn10": "ISBN-10",
         "pageCount": "Page Count",
-        "amazonRating": "Amazon Rating",
-        "amazonReviewCount": "Amazon Rating #",
-        "goodreadsRating": "Goodreads Rating",
-        "goodreadsReviewCount": "Goodreads Rating #",
-        "hardcoverRating": "Hardcover Rating",
-        "hardcoverReviewCount": "Hardcover Rating #",
-        "audibleRating": "Audible Rating",
-        "audibleReviewCount": "Audible Rating #",
-        "applebooksId": "Apple Books ID",
-        "applebooksRating": "Apple Books ★",
-        "applebooksReviewCount": "Apple Books #",
         "doubanRating": "Douban Rating",
-        "doubanReviewCount": "Douban Rating #",
-        "ranobedbRating": "Ranobedb Rating"
+        "doubanReviewCount": "Douban Rating #"
       }
     },
     "fieldSelector": {
       "sectionTitle": "Enabled Fields in Metadata Editor & Picker",
-      "sectionDesc": "Select which metadata fields to display when editing book information or picking metadata from providers. Disabled fields will be hidden from the interface.",
-      "providers": {
-        "openlibrary": "OpenLibrary",
-        "amazon": "Amazon",
-        "googleBooks": "Google Books",
-        "goodreads": "Goodreads",
-        "hardcover": "Hardcover",
-        "audible": "Audible",
-        "applebooks": "Apple Books",
-        "comicvine": "Comicvine",
-        "lubimyczytac": "Lubimyczytac",
-        "ranobedb": "Ranobedb"
-      },
-      "fields": {
-        "openlibraryId": "OpenLibrary ID",
-        "asin": "Amazon ASIN",
-        "amazonRating": "Amazon Rating",
-        "amazonReviewCount": "Amazon Review Count",
-        "googleId": "Google Books ID",
-        "goodreadsId": "Goodreads ID",
-        "goodreadsRating": "Goodreads Rating",
-        "goodreadsReviewCount": "Goodreads Review Count",
-        "hardcoverId": "Hardcover ID",
-        "hardcoverBookId": "Hardcover Book ID",
-        "hardcoverRating": "Hardcover Rating",
-        "hardcoverReviewCount": "Hardcover Review Count",
-        "comicvineId": "Comicvine ID",
-        "lubimyczytacId": "Lubimyczytac ID",
-        "lubimyczytacRating": "LubimyCzytac Rating",
-        "ranobedbId": "Ranobedb ID",
-        "ranobedbRating": "Ranobedb Rating",
-        "audibleId": "Audible ID",
-        "audibleRating": "Audible Rating",
-        "audibleReviewCount": "Audible Review Count",
-        "applebooksId": "Apple Books ID",
-        "applebooksRating": "Apple Books Rating",
-        "applebooksReviewCount": "Apple Books Review Count"
-      }
+      "sectionDesc": "Select which metadata fields to display when editing book information or picking metadata from providers. Disabled fields will be hidden from the interface."
     }
   },
   "settingsLibMeta": {
@@ -1815,8 +1766,9 @@
         "selectedCount": "{{ count }} selected"
       },
       "shelfMenu": {
-        "addToShelf": "Add to shelf",
-        "newShelf": "New shelf…"
+        "addToShelf": "Add to Shelf",
+        "newShelf": "New Shelf",
+        "removeFromAllShelves": "Remove from Your Shelves"
       },
       "spinner": {
         "loading": "Loading"
@@ -1842,6 +1794,7 @@
     "commandPalette": {
       "placeholder": "Search books, pages, libraries, shelves, and actions...",
       "empty": "No matches",
+      "bookSearchError": "Book search failed",
       "hintNavigate": "navigate",
       "hintSelect": "select",
       "ariaLabel": "Command palette",
@@ -2258,29 +2211,6 @@
       "audiobookDetails": "Audiobook Details",
       "comicBookDetails": "Comic Book Details",
       "providerMetadata": "Provider Metadata",
-      "openlibraryId": "OpenLibrary ID",
-      "amazonAsin": "Amazon ASIN",
-      "amazonRating": "Amazon ★",
-      "amazonReviewCount": "Amazon #",
-      "googleBooksId": "Google Books ID",
-      "goodreadsId": "Goodreads ID",
-      "goodreadsRating": "Goodreads ★",
-      "goodreadsReviewCount": "Goodreads #",
-      "hardcoverId": "Hardcover ID",
-      "hardcoverBookId": "Hardcover Book ID",
-      "hardcoverRating": "Hardcover ★",
-      "hardcoverReviewCount": "Hardcover #",
-      "lubimyczytacId": "Lubimyczytac ID",
-      "lubimyczytacRating": "Lubimyczytac ★",
-      "comicvineId": "Comicvine ID",
-      "ranobedbId": "Ranobedb ID",
-      "ranobedbRating": "Ranobedb ★",
-      "audibleId": "Audible ID",
-      "audibleRating": "Audible ★",
-      "audibleReviewCount": "Audible #",
-      "applebooksId": "Apple Books ID",
-      "applebooksRating": "Apple Books ★",
-      "applebooksReviewCount": "Apple Books #",
       "closeBtn": "Close",
       "previousBookBtn": "Previous Book",
       "nextBookBtn": "Next Book",
@@ -2341,7 +2271,6 @@
       }
     },
     "picker": {
-      "loadingMetadata": "Loading complete metadata...",
       "columnCurrent": "Current",
       "columnFetched": "Fetched",
       "copyMissingTooltip": "Copy missing fields",
@@ -2402,9 +2331,10 @@
       "fetching": "Fetching...",
       "readyToSearch": "Ready to Search",
       "readyToSearchHint": "Enter your search criteria above and click Search to find metadata",
+      "noProviders": "No metadata providers are available",
       "noResultsFound": "No Results Found",
       "noResultsHint": "Try adjusting your search criteria or selecting different providers",
-      "unknownProvider": "Unknown Provider",
+      "searchFailed": "Search failed",
       "selectOverlay": "Select"
     },
     "tabs": {
@@ -2517,6 +2447,8 @@
       "goToPreviousBook": "Go to Previous Book",
       "goToNextBook": "Go to Next Book",
       "personalRating": "Personal Rating",
+      "ratingTooltip": "★ {{rating}} | {{reviews}} reviews",
+      "ratingTooltipNoReviews": "★ {{rating}}",
       "loadingBookDetails": "Loading book details...",
       "readStatusUnread": "Unread",
       "readStatusPaused": "Paused",
@@ -2622,6 +2554,7 @@
       "byLabel": "By:",
       "coverFileLabel": "Cover file:",
       "loading": "Loading sidecar data...",
+      "readFailed": "Could not load sidecar metadata. Please try again.",
       "syncStatusInSync": "In Sync",
       "syncStatusOutdated": "Outdated",
       "syncStatusConflict": "Conflict",
@@ -2655,6 +2588,7 @@
       "searchingForCovers": "Searching for covers...",
       "noCoversFound": "No Covers Found",
       "noCoversFoundDescription": "Try adjusting your search terms or check the spelling.",
+      "searchFailed": "Search failed",
       "coversFoundSingular": "{{ count }} cover found",
       "coversFoundPlural": "{{ count }} covers found",
       "resultsHint": "Click on an image to preview, or select to apply",
@@ -2799,10 +2733,31 @@
       "toast": {
         "providerRequiredSummary": "Error",
         "providerRequiredDetail": "At least one provider (P1-P4) must be selected for each enabled book field."
-      }
+      },
+      "inactiveProvider": "{{provider}} (disabled)"
     },
     "fetchOptions": {
       "startRefresh": "Start Refresh"
+    },
+    "providers": {
+      "openLibrary": "Open Library",
+      "amazon": "Amazon",
+      "google": "Google Books",
+      "goodReads": "Goodreads",
+      "hardcover": "Hardcover",
+      "comicvine": "Comic Vine",
+      "douban": "Douban",
+      "lubimyczytac": "Lubimyczytać",
+      "ranobedb": "RanobeDB",
+      "audible": "Audible",
+      "appleBooks": "Apple Books"
+    },
+    "providerFields": {
+      "id": "{{ provider }} ID",
+      "rating": "{{ provider }} Rating",
+      "reviewCount": "{{ provider }} Review Count",
+      "asin": "Amazon ASIN",
+      "hardcoverBookId": "Hardcover Book ID"
     }
   },
   "notebook": {
@@ -2905,6 +2860,14 @@
       }
     },
     "card": {
+      "book": {
+        "physical": "PHY",
+        "unknownTitle": "Unknown Title"
+      },
+      "aria": {
+        "bookMenu": "Options for {{ title }}",
+        "coverAlt": "Cover of {{ title }}"
+      },
       "menu": {
         "assignShelf": "Assign Shelf",
         "viewDetails": "View Details",
@@ -2971,6 +2934,57 @@
         "readStatusMenu": "Change read status"
       }
     },
+    "menu": {
+      "label": "Book actions",
+      "openInNewTab": "Open Details in New Tab",
+      "addToShelf": "Add to Shelf",
+      "markAs": "Mark as",
+      "send": "Send",
+      "quickSend": "Quick Send",
+      "customSend": "Custom Send",
+      "download": "Download",
+      "metadata": "Metadata",
+      "editMetadata": "Edit Metadata",
+      "fetchMetadata": "Refresh Metadata",
+      "fetchMetadataWithOptions": "Refresh with Options",
+      "searchProviders": "Search Providers",
+      "restoreCover": "Restore Cover from File",
+      "generateCover": "Generate Cover from Title",
+      "lockMetadata": "Lock Metadata",
+      "more": "More",
+      "organizeFile": "Organize File",
+      "resetGrimmoryProgress": "Reset Grimmory Progress",
+      "resetKoreaderProgress": "Reset KOReader Progress",
+      "deleteEntireBook": "Book & all files",
+      "confirm": {
+        "deleteBookMessage": "Are you sure you want to delete \"{{ title }}\"?\n\nThis will permanently remove the book file from your filesystem.\n\nThis action cannot be undone.",
+        "deleteBookHeader": "Confirm Deletion",
+        "deleteFileMessage": "Are you sure you want to delete the additional file \"{{ fileName }}\"?",
+        "deleteFileHeader": "Confirm File Deletion",
+        "largeFileMessage": "This file exceeds 25MB. Some email providers may reject large attachments.\n\nDo you want to send it anyway?",
+        "largeFileHeader": "Large File Warning",
+        "sendAnyway": "Send Anyway"
+      }
+    },
+    "readAction": {
+      "read": {
+        "short": "Read",
+        "long": "Read Book"
+      },
+      "continueReading": {
+        "short": "Continue",
+        "long": "Continue Reading"
+      },
+      "play": {
+        "short": "Play",
+        "long": "Play Audiobook"
+      },
+      "continueListening": {
+        "short": "Continue",
+        "long": "Continue Listening"
+      }
+    },
+    "selectBook": "Select {{ title }}",
     "notes": {
       "confirm": {
         "deleteMessage": "Are you sure you want to delete the note \"{{ title }}\"?",
@@ -3269,7 +3283,9 @@
       "validationReady": "Ready to create",
       "cancelButton": "Cancel",
       "addButton": "Add Physical Book",
-      "fetchMetadataTooltip": "Fetch metadata by ISBN"
+      "fetchMetadataTooltip": "Fetch metadata by ISBN",
+      "metadataNotFound": "No metadata found for this ISBN. You can enter the book details manually.",
+      "metadataLookupFailed": "Could not fetch metadata. Please try again or enter the book details manually."
     },
     "bulkIsbnImport": {
       "title": "Import ISBNs",
@@ -5067,22 +5083,12 @@
       "fileSize": "File Size (Kb)",
       "fileType": "File Type",
       "subtitle": "Subtitle",
-      "amazonRating": "Amazon Rating",
-      "amazonReviewCount": "Amazon Review Count",
-      "goodreadsRating": "Goodreads Rating",
-      "goodreadsReviewCount": "Goodreads Review Count",
-      "hardcoverRating": "Hardcover Rating",
-      "hardcoverReviewCount": "Hardcover Review Count",
-      "ranobedbRating": "Ranobedb Rating",
       "genre": "Genre",
       "addedOn": "Date Added",
-      "lubimyczytacRating": "LubimyCzytac Rating",
       "description": "Description",
       "narrator": "Narrator",
       "ageRating": "Age Rating",
       "contentRating": "Content Rating",
-      "audibleRating": "Audible Rating",
-      "audibleReviewCount": "Audible Review Count",
       "abridged": "Abridged",
       "audiobookDuration": "Audiobook Duration (s)",
       "audiobookCodec": "Codec",
@@ -5212,31 +5218,9 @@
       "seriesTotal": "Series Total",
       "isbn13": "ISBN-13",
       "isbn10": "ISBN-10",
-      "asin": "ASIN",
       "ageRating": "Age Rating",
       "contentRating": "Content Rating",
       "personalRating": "Personal Rating",
-      "amazonRating": "Amazon Rating",
-      "goodreadsRating": "Goodreads Rating",
-      "hardcoverRating": "Hardcover Rating",
-      "ranobedbRating": "Ranobedb Rating",
-      "lubimyczytacRating": "LubimyCzytac Rating",
-      "audibleRating": "Audible Rating",
-      "applebooksRating": "Apple Books Rating",
-      "amazonReviewCount": "Amazon Reviews",
-      "goodreadsReviewCount": "Goodreads Reviews",
-      "hardcoverReviewCount": "Hardcover Reviews",
-      "audibleReviewCount": "Audible Reviews",
-      "applebooksReviewCount": "Apple Books Review Count",
-      "openlibraryId": "OpenLibrary ID",
-      "goodreadsId": "Goodreads ID",
-      "hardcoverId": "Hardcover ID",
-      "googleId": "Google ID",
-      "audibleId": "Audible ID",
-      "applebooksId": "Apple Books ID",
-      "lubimyczytacId": "Lubimyczytac ID",
-      "ranobedbId": "Ranobedb ID",
-      "comicvineId": "ComicVine ID",
       "narrator": "Narrator",
       "abridged": "Abridged",
       "audiobookDuration": "Duration",

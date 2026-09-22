@@ -751,62 +751,13 @@
         "isbn13": "ISBN-13",
         "isbn10": "ISBN-10",
         "pageCount": "Broj stranica",
-        "amazonRating": "Ocjena na Amazonu",
-        "amazonReviewCount": "Ocjena na Amazonu #",
-        "goodreadsRating": "Ocjena na Goodreadsu",
-        "goodreadsReviewCount": "Ocjena na Goodreadsu #",
-        "hardcoverRating": "Ocjena Hardcover",
-        "hardcoverReviewCount": "Ocjena Hardcover #",
-        "audibleRating": "Ocjena Audible",
-        "audibleReviewCount": "Ocjena Audible #",
-        "applebooksId": "Apple Books ID",
-        "applebooksRating": "Apple Books ★",
-        "applebooksReviewCount": "Apple Books #",
         "doubanRating": "Ocjena Douban",
-        "doubanReviewCount": "Ocjena Douban #",
-        "ranobedbRating": "Ocjena Ranobedb"
+        "doubanReviewCount": "Ocjena Douban #"
       }
     },
     "fieldSelector": {
       "sectionTitle": "Omogućena polja u uređivaču i biraču metapodataka",
-      "sectionDesc": "Odaberite koja polja metapodataka prikazivati prilikom uređivanja informacija o knjizi ili biranja metapodataka od pružatelja. Onemogućena polja će biti skrivena iz sučelja.",
-      "providers": {
-        "openlibrary": "OpenLibrary",
-        "amazon": "Amazon",
-        "googleBooks": "Google knjige",
-        "goodreads": "Goodreads",
-        "hardcover": "Hardcover",
-        "audible": "Audible",
-        "applebooks": "Apple Books",
-        "comicvine": "Comicvine",
-        "lubimyczytac": "Lubimyczytac",
-        "ranobedb": "Ranobedb"
-      },
-      "fields": {
-        "openlibraryId": "OpenLibrary ID",
-        "asin": "Amazon ASIN",
-        "amazonRating": "Ocjena na Amazonu",
-        "amazonReviewCount": "Broj recenzija na Amazonu",
-        "googleId": "ID Google knjiga",
-        "goodreadsId": "Goodreads ID",
-        "goodreadsRating": "Ocjena na Goodreadsu",
-        "goodreadsReviewCount": "Broj recenzija na Goodreadsu",
-        "hardcoverId": "Hardcover ID",
-        "hardcoverBookId": "ID Hardcover knjige",
-        "hardcoverRating": "Hardcover ocjena",
-        "hardcoverReviewCount": "Broj recenzija na Hardcoveru",
-        "comicvineId": "Comicvine ID",
-        "lubimyczytacId": "Lubimyczytac ID",
-        "lubimyczytacRating": "Ocjena LubimyCzytac",
-        "ranobedbId": "Ranobedb ID",
-        "ranobedbRating": "Ocjena Ranobedb-a",
-        "audibleId": "Audible ID",
-        "audibleRating": "Audible ocjena",
-        "audibleReviewCount": "Broj recenzija na Audible",
-        "applebooksId": "Apple Books ID",
-        "applebooksRating": "Ocjena na Apple Books",
-        "applebooksReviewCount": "Broj recenzija na Apple Booksu"
-      }
+      "sectionDesc": "Odaberite koja polja metapodataka prikazivati prilikom uređivanja informacija o knjizi ili biranja metapodataka od pružatelja. Onemogućena polja će biti skrivena iz sučelja."
     }
   },
   "settingsLibMeta": {
@@ -2258,29 +2209,6 @@
       "audiobookDetails": "Detalji audioknjige",
       "comicBookDetails": "Detalji stripa",
       "providerMetadata": "Metapodaci pružatelja",
-      "openlibraryId": "OpenLibrary ID",
-      "amazonAsin": "Amazon ASIN",
-      "amazonRating": "Amazon ★",
-      "amazonReviewCount": "Amazon #",
-      "googleBooksId": "Google Books ID",
-      "goodreadsId": "Goodreads ID",
-      "goodreadsRating": "Goodreads ★",
-      "goodreadsReviewCount": "Goodreads #",
-      "hardcoverId": "Hardcover ID",
-      "hardcoverBookId": "Hardcover Book ID",
-      "hardcoverRating": "Hardcover ★",
-      "hardcoverReviewCount": "Hardcover #",
-      "lubimyczytacId": "Lubimyczytac ID",
-      "lubimyczytacRating": "Lubimyczytac ★",
-      "comicvineId": "Comicvine ID",
-      "ranobedbId": "Ranobedb ID",
-      "ranobedbRating": "Ranobedb ★",
-      "audibleId": "Audible ID",
-      "audibleRating": "Audible ★",
-      "audibleReviewCount": "Audible #",
-      "applebooksId": "Apple Books ID",
-      "applebooksRating": "Apple Books ★",
-      "applebooksReviewCount": "Apple Books #",
       "closeBtn": "Zatvori",
       "previousBookBtn": "Prethodna knjiga",
       "nextBookBtn": "Sljedeća knjiga",
@@ -2341,7 +2269,6 @@
       }
     },
     "picker": {
-      "loadingMetadata": "Učitavanje potpunih metapodataka...",
       "columnCurrent": "Trenutno",
       "columnFetched": "Dohvaćeno",
       "copyMissingTooltip": "Kopiraj polja koja nedostaju",
@@ -2404,7 +2331,6 @@
       "readyToSearchHint": "Unesite kriterije pretrage iznad i kliknite Pretraži za pronalaženje metapodataka",
       "noResultsFound": "Nema pronađenih rezultata",
       "noResultsHint": "Pokušajte prilagoditi kriterije pretrage ili odabrati druge pružatelje",
-      "unknownProvider": "Nepoznati pružatelj usluge",
       "selectOverlay": "Odaberi"
     },
     "tabs": {
@@ -2905,6 +2831,12 @@
       }
     },
     "card": {
+      "book": {
+        "unknownTitle": "Nepoznati naslov"
+      },
+      "aria": {
+        "coverAlt": "Naslovnica {{ title }}"
+      },
       "menu": {
         "assignShelf": "Dodijeli policu",
         "viewDetails": "Prikaži detalje",
@@ -2971,6 +2903,44 @@
         "readStatusMenu": "Promijeni status čitanja"
       }
     },
+    "menu": {
+      "quickSend": "Brzo slanje",
+      "customSend": "Prilagođeno slanje",
+      "download": "Preuzmi",
+      "metadata": "Metapodaci",
+      "editMetadata": "Uređivanje metapodataka",
+      "more": "Više",
+      "organizeFile": "Organiziraj datoteku",
+      "resetGrimmoryProgress": "Vrati Grimmory napredak",
+      "resetKoreaderProgress": "Vrati KOReader napredak",
+      "confirm": {
+        "deleteBookMessage": "Jeste li sigurni da želite obrisati \"{{ title }}\"?\n\nOvo će trajno ukloniti datoteku knjige iz vašeg datotečnog sustava.\n\nOva radnja se ne može poništiti.",
+        "deleteBookHeader": "Potvrdi brisanje",
+        "deleteFileMessage": "Jeste li sigurni da želite obrisati dodatnu datoteku \"{{ fileName }}\"?",
+        "deleteFileHeader": "Potvrdi brisanje datoteke",
+        "largeFileMessage": "Ova datoteka prelazi 25 MB. Neki pružatelji usluga e-pošte mogu odbiti velike priloge.\n\nŽelite li je ipak poslati?",
+        "largeFileHeader": "Upozorenje o velikoj datoteci",
+        "sendAnyway": "Svejedno pošalji"
+      }
+    },
+    "readAction": {
+      "read": {
+        "long": "Čitaj knjigu"
+      },
+      "continueReading": {
+        "short": "Nastavi",
+        "long": "Nastavi čitanje"
+      },
+      "play": {
+        "short": "Reproduciraj",
+        "long": "Reproduciraj audioknjgu"
+      },
+      "continueListening": {
+        "short": "Nastavi",
+        "long": "Nastavi slušanje"
+      }
+    },
+    "selectBook": "Odaberite {{ title }}",
     "notes": {
       "confirm": {
         "deleteMessage": "Jeste li sigurni da želite obrisati bilješku \"{{ title }}\"?",
@@ -5067,22 +5037,12 @@
       "fileSize": "Veličina datoteke (Kb)",
       "fileType": "Vrsta datoteke",
       "subtitle": "Podnaslov",
-      "amazonRating": "Amazon ocjena",
-      "amazonReviewCount": "Amazon broj recenzija",
-      "goodreadsRating": "Goodreads ocjena",
-      "goodreadsReviewCount": "Goodreads broj recenzija",
-      "hardcoverRating": "Hardcover ocjena",
-      "hardcoverReviewCount": "Hardcover broj recenzija",
-      "ranobedbRating": "Ranobedb ocjena",
       "genre": "Žanr",
       "addedOn": "Datum dodavanja",
-      "lubimyczytacRating": "Lubimyczytac ocjena",
       "description": "Opis",
       "narrator": "Narator",
       "ageRating": "Dobna ocjena",
       "contentRating": "Ocjena sadržaja",
-      "audibleRating": "Audible ocjena",
-      "audibleReviewCount": "Audible broj recenzija",
       "abridged": "Skraćeno",
       "audiobookDuration": "Trajanje audioknjige (s)",
       "audiobookCodec": "Kodek",
@@ -5212,31 +5172,9 @@
       "seriesTotal": "Ukupno u serijalu",
       "isbn13": "ISBN-13",
       "isbn10": "ISBN-10",
-      "asin": "ASIN",
       "ageRating": "Dobna ocjena",
       "contentRating": "Ocjena sadržaja",
       "personalRating": "Osobna ocjena",
-      "amazonRating": "Amazon ocjena",
-      "goodreadsRating": "Goodreads ocjena",
-      "hardcoverRating": "Hardcover ocjena",
-      "ranobedbRating": "Ranobedb ocjena",
-      "lubimyczytacRating": "Lubimyczytac ocjena",
-      "audibleRating": "Audible ocjena",
-      "applebooksRating": "Ocjena na Apple Books",
-      "amazonReviewCount": "Amazon recenzije",
-      "goodreadsReviewCount": "Goodreads recenzije",
-      "hardcoverReviewCount": "Hardcover recenzije",
-      "audibleReviewCount": "Audible recenzije",
-      "applebooksReviewCount": "Broj recenzija na Apple Booksu",
-      "openlibraryId": "OpenLibrary ID",
-      "goodreadsId": "Goodreads ID",
-      "hardcoverId": "Hardcover ID",
-      "googleId": "Google ID",
-      "audibleId": "Audible ID",
-      "applebooksId": "Apple Books ID",
-      "lubimyczytacId": "Lubimyczytac ID",
-      "ranobedbId": "Ranobedb ID",
-      "comicvineId": "ComicVine ID",
       "narrator": "Narator",
       "abridged": "Skraćeno",
       "audiobookDuration": "Trajanje",
