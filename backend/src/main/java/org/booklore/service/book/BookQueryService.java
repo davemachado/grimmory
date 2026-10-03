@@ -1,5 +1,6 @@
 package org.booklore.service.book;
 
+import jakarta.persistence.criteria.From;
 import lombok.RequiredArgsConstructor;
 import org.booklore.app.specification.AppBookSpecification;
 import org.booklore.mapper.v2.BookMapperV2;
@@ -58,21 +59,26 @@ public class BookQueryService {
 
     private Specification<BookEntity> distinct(Specification<BookEntity> filter) {
         return (root, query, cb) -> {
-            // We need to query distinct because otherwise the `JOIN` + `LIMIT` cause the page sizes to be wrong.
-            //
-            // I've tried a few ways to just get only what we need - distinct IDs from the repository.
-            // With Projections, we ran into issues with the order by not getting applied.  I'm sure
-            // there's a better way but right now this works well enough, even though it over-fetches.
-
-            query.distinct(true);
-            return filter.toPredicate(root, query, cb);
+            var predicate = filter.toPredicate(root, query, cb);
+            query.distinct(query.isDistinct() || hasCollectionJoin(root));
+            return predicate;
         };
     }
 
+    private static boolean hasCollectionJoin(From<?, ?> from) {
+        return from.getJoins().stream().anyMatch(join ->
+                join.getAttribute().isCollection() || hasCollectionJoin(join));
+    }
+
+    private interface BookIdProjection {
+        Long getId();
+    }
+
     public Page<Book> findBooksPaged(Specification<BookEntity> spec, Pageable pageable, Long userId) {
-        Page<BookEntity> page = bookRepository.findAll(distinct(spec), pageable);
+        Page<BookIdProjection> page = bookRepository.findBy(distinct(spec),
+                query -> query.as(BookIdProjection.class).page(pageable));
         Map<Long, BookEntity> booksById = bookRepository
-                .findAllWithMetadataByIds(page.getContent().stream().map(BookEntity::getId).collect(Collectors.toSet()))
+                .findAllWithMetadataByIds(page.getContent().stream().map(BookIdProjection::getId).collect(Collectors.toSet()))
                 .stream()
                 .collect(Collectors.toMap(BookEntity::getId, book -> book));
         List<Book> dtos = page.getContent().stream()
