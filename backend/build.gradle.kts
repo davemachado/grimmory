@@ -10,7 +10,7 @@ plugins {
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.hibernate.orm") version "7.4.10.Final"
-    id("com.github.ben-manes.versions") version "0.64.0"
+    id("com.github.ben-manes.versions") version "0.66.0"
     jacoco
 }
 
@@ -120,7 +120,7 @@ dependencies {
     // --- Database & Migration ---
     implementation("org.mariadb.jdbc:mariadb-java-client:3.5.10")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
-    implementation("org.flywaydb:flyway-mysql:13.9.0")
+    implementation("org.flywaydb:flyway-mysql:13.10.0")
 
     // --- Lombok (For Clean Code) ---
     compileOnly("org.projectlombok:lombok:1.18.48")
@@ -132,10 +132,10 @@ dependencies {
     runtimeOnly("org.grimmory:pdfium4j:$pdfium4jVersion:${pdfiumNativesClassifier()}")
 
     // --- TwelveMonkeys ImageIO ---
-    implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.15.2")
-    implementation("com.twelvemonkeys.imageio:imageio-tiff:3.15.2")
-    implementation("com.twelvemonkeys.imageio:imageio-webp:3.15.2")
-    implementation("com.twelvemonkeys.imageio:imageio-bmp:3.15.2")
+    implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.15.3")
+    implementation("com.twelvemonkeys.imageio:imageio-tiff:3.15.3")
+    implementation("com.twelvemonkeys.imageio:imageio-webp:3.15.3")
+    implementation("com.twelvemonkeys.imageio:imageio-bmp:3.15.3")
 
     // epub4j-grimmory fork publishes as org.grimmory:epub4j-core
     implementation("org.grimmory:epub4j-core:2.1.0")
@@ -183,7 +183,7 @@ dependencies {
 
     // --- Caching ---
     implementation("org.springframework.boot:spring-boot-starter-cache")
-    implementation("com.github.ben-manes.caffeine:caffeine:3.3.0")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.3.1")
 
     // --- Test Dependencies ---
     testImplementation("org.springframework.boot:spring-boot-starter-test")
