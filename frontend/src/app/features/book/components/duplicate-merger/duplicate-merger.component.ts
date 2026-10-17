@@ -8,7 +8,7 @@ import {SelectButton} from '@openng/optimus-ui/selectbutton';
 import {ProgressBar} from '@openng/optimus-ui/progressbar';
 import {Tag} from '@openng/optimus-ui/tag';
 import {Paginator, PaginatorState} from '@openng/optimus-ui/paginator';
-import {Subject, takeUntil} from 'rxjs';
+import {lastValueFrom, Subject, takeUntil} from 'rxjs';
 import {BookFileService} from '../../service/book-file.service';
 import {BookService} from '../../service/book.service';
 import {Book, DuplicateDetectionRequest, DuplicateGroup} from '../../model/book.model';
@@ -46,30 +46,6 @@ interface DisplayGroup extends DuplicateGroup {
   styleUrls: ['./duplicate-merger.component.scss']
 })
 export class DuplicateMergerComponent implements OnInit, OnDestroy {
-  libraryId!: number;
-  presetMode: PresetMode = 'balanced';
-  showAdvanced = false;
-
-  matchByIsbn = true;
-  matchByExternalId = true;
-  matchByTitleAuthor = true;
-  matchByDirectory = false;
-  matchByFilename = false;
-
-  isScanning = signal(false);
-  isMerging = signal(false);
-  hasScanned = signal(false);
-  moveFiles = false;
-  mergeProgress = signal(0);
-  mergeTotal = signal(0);
-
-  groups: DisplayGroup[] = [];
-  presetOptions: { label: string; value: PresetMode }[] = [];
-
-  pageFirst = 0;
-  pageSize = 20;
-
-  private destroy$ = new Subject<void>();
   private readonly bookFileService = inject(BookFileService);
   private readonly bookService = inject(BookService);
   private readonly messageService = inject(MessageService);
@@ -80,6 +56,30 @@ export class DuplicateMergerComponent implements OnInit, OnDestroy {
   readonly urlHelper = inject(UrlHelperService);
   private readonly appSettingsService = inject(AppSettingsService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  libraryId!: number;
+  presetMode: PresetMode = 'balanced';
+  showAdvanced = false;
+
+  matchByIsbn = true;
+  matchByExternalId = true;
+  matchByTitleAuthor = true;
+  matchByDirectory = false;
+  matchByFilename = false;
+
+  readonly isScanning = signal(false);
+  readonly isMerging = signal(false);
+  readonly hasScanned = signal(false);
+  moveFiles = false;
+  readonly mergeProgress = signal(0);
+  readonly mergeTotal = signal(0);
+
+  groups: DisplayGroup[] = [];
+  presetOptions: { label: string; value: PresetMode }[] = [];
+
+  pageFirst = 0;
+  pageSize = 20;
+
+  private readonly destroy$ = new Subject<void>();
 
   ngOnInit(): void {
     this.libraryId = this.config.data.libraryId;
@@ -298,9 +298,8 @@ export class DuplicateMergerComponent implements OnInit, OnDestroy {
 
     group.dismissed = true;
     try {
-      await this.bookFileService.attachBookFiles(targetId, sourceIds, this.moveFiles)
-        .pipe(takeUntil(this.destroy$))
-        .toPromise();
+      await lastValueFrom(this.bookFileService.attachBookFiles(targetId, sourceIds, this.moveFiles)
+        .pipe(takeUntil(this.destroy$)), {defaultValue: undefined});
     } catch {
       group.dismissed = false;
       this.messageService.add({
@@ -335,9 +334,8 @@ export class DuplicateMergerComponent implements OnInit, OnDestroy {
       }
 
       try {
-        await this.bookFileService.attachBookFiles(targetId, sourceIds, this.moveFiles)
-          .pipe(takeUntil(this.destroy$))
-          .toPromise();
+        await lastValueFrom(this.bookFileService.attachBookFiles(targetId, sourceIds, this.moveFiles)
+          .pipe(takeUntil(this.destroy$)), {defaultValue: undefined});
         group.dismissed = true;
         successCount++;
       } catch {

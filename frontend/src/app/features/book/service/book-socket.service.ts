@@ -1,8 +1,8 @@
-import {DestroyRef, inject, Injectable} from '@angular/core';
+import {DestroyRef, inject, Service} from '@angular/core';
 import {QueryClient} from '@tanstack/angular-query-experimental';
 
 import {invalidateBookRecommendations} from '../data/book-query-cache';
-import {TaskProgressPayload} from '../../settings/task-management/task.service';
+import {TaskProgressPayload, TaskStatus} from '../../settings/task-management/task.service';
 import {Book} from '../model/book.model';
 import {
   BookCoverPatch,
@@ -17,7 +17,7 @@ import {
 function isBookIdArray(payload: Book | readonly number[]): payload is readonly number[] {
   return Array.isArray(payload);
 }
-@Injectable({providedIn: 'root'})
+@Service()
 export class BookSocketService {
   private readonly queryClient = inject(QueryClient);
   private readonly destroyRef = inject(DestroyRef);
@@ -55,7 +55,7 @@ export class BookSocketService {
   }
 
   handleTaskProgress(payload: TaskProgressPayload): void {
-    if (payload.taskType !== 'UPDATE_BOOK_RECOMMENDATIONS' || payload.taskStatus !== 'COMPLETED') {
+    if (payload.taskType !== 'UPDATE_BOOK_RECOMMENDATIONS' || payload.taskStatus !== TaskStatus.COMPLETED) {
       return;
     }
     void Promise.all([

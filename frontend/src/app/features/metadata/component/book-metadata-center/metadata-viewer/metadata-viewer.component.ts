@@ -1,6 +1,6 @@
 import {AfterViewChecked, Component, computed, DestroyRef, ElementRef, inject, Input, OnInit, signal, ViewChild} from '@angular/core';
 import {Button} from '@openng/optimus-ui/button';
-import {DecimalPipe, NgClass} from '@angular/common';
+import {DecimalPipe} from '@angular/common';
 import {BookService} from '../../../../book/service/book.service';
 import {BookFileService} from '../../../../book/service/book-file.service';
 import {Rating, RatingRateEvent} from '@openng/optimus-ui/rating';
@@ -61,11 +61,30 @@ interface ProviderBadge {
   standalone: true,
   templateUrl: './metadata-viewer.component.html',
   styleUrl: './metadata-viewer.component.scss',
-  imports: [Button, Rating, FormsModule, SplitButton, NgClass, Tooltip, DecimalPipe, ProgressBar, Menu, DatePicker, ProgressSpinner, TieredMenu, TagComponent, MetadataTabsComponent, TranslocoDirective, TranslocoPipe, Dialog, Checkbox, CoverComponent]
+  imports: [Button, Rating, FormsModule, SplitButton, Tooltip, DecimalPipe, ProgressBar, Menu, DatePicker, ProgressSpinner, TieredMenu, TagComponent, MetadataTabsComponent, TranslocoDirective, TranslocoPipe, Dialog, Checkbox, CoverComponent]
 })
 export class MetadataViewerComponent implements OnInit, AfterViewChecked {
-  private bookService = inject(BookService);
-  private currentBook = signal<Book | null>(null);
+  private readonly bookService = inject(BookService);
+  private readonly t = inject(TranslocoService);
+  private readonly libraryService = inject(LibraryService);
+  private readonly bookDialogHelperService = inject(BookDialogHelperService)
+  private readonly emailService = inject(EmailService);
+  private readonly messageService = inject(MessageService);
+  private readonly bookFileService = inject(BookFileService);
+  private readonly taskHelperService = inject(TaskHelperService);
+  private readonly authorService = inject(AuthorService);
+  protected urlHelper = inject(UrlHelperService);
+  protected userService = inject(UserService);
+  protected languageResolver = inject(LanguageResolverService);
+  private readonly appSettingsService = inject(AppSettingsService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly dialogRef = inject(DynamicDialogRef, { optional: true });
+  private readonly catalog = inject(MetadataCatalogService);
+  private readonly bookNavigationService = inject(BookNavigationService);
+  private readonly metadataHostService = inject(BookMetadataHostService);
+  private readonly currentBook = signal<Book | null>(null);
   private readonly seriesLookupBookId = computed(() => {
     const metadata = this.currentBook()?.metadata;
     return metadata?.seriesName ? metadata.bookId : null;
@@ -112,28 +131,9 @@ export class MetadataViewerComponent implements OnInit, AfterViewChecked {
   set recommendedBooks(value: BookRecommendation[]) {
     this.originalRecommendedBooks.set(value);
   }
-
-  private readonly t = inject(TranslocoService);
   private readonly activeLang = toSignal(this.t.langChanges$, {initialValue: this.t.getActiveLang()});
-  private libraryService = inject(LibraryService);
-  private bookDialogHelperService = inject(BookDialogHelperService)
-  private emailService = inject(EmailService);
-  private messageService = inject(MessageService);
-  private bookFileService = inject(BookFileService);
-  private taskHelperService = inject(TaskHelperService);
-  private authorService = inject(AuthorService);
-  protected urlHelper = inject(UrlHelperService);
-  protected userService = inject(UserService);
-  protected languageResolver = inject(LanguageResolverService);
-  private appSettingsService = inject(AppSettingsService);
-  private confirmationService = inject(ConfirmationService);
-
-  private router = inject(Router);
-  private destroyRef = inject(DestroyRef);
-  private dialogRef = inject(DynamicDialogRef, { optional: true });
-  private userState = this.userService.currentUser;
-  private appSettings = this.appSettingsService.appSettings;
-  private readonly catalog = inject(MetadataCatalogService);
+  private readonly userState = this.userService.currentUser;
+  private readonly appSettings = this.appSettingsService.appSettings;
 
   readonly providerBadges = computed((): ProviderBadge[] => {
     const metadata = this.currentBook()?.metadata;
@@ -500,9 +500,6 @@ export class MetadataViewerComponent implements OnInit, AfterViewChecked {
     {value: ReadStatus.WONT_READ, labelKey: 'metadata.viewer.readStatusWontRead'},
     {value: ReadStatus.UNSET, labelKey: 'metadata.viewer.readStatusUnset'},
   ];
-
-  private bookNavigationService = inject(BookNavigationService);
-  private metadataHostService = inject(BookMetadataHostService);
   readonly navigationState = this.bookNavigationService.navigationState;
   readonly canNavigatePrevious = this.bookNavigationService.canNavigatePrevious;
   readonly canNavigateNext = this.bookNavigationService.canNavigateNext;

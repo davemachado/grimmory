@@ -14,8 +14,23 @@ updates:
       - "backend"
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      twelvemonkeys:
+        patterns:
+          - "com.twelvemonkeys.imageio:*"
+      mapstruct:
+        patterns:
+          - "org.mapstruct:*"
+      jaxb:
+        patterns:
+          - "jakarta.xml.bind:*"
+          - "org.glassfish.jaxb:*"
+      compress:
+        patterns:
+          - "org.apache.commons:commons-compress"
+          - "org.tukaani:xz"
 
-  # JavaScript – pnpm workspace (frontend + release tooling)
+  # JavaScript – pnpm workspace (frontend)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -25,24 +40,47 @@ updates:
       timezone: "UTC"
     cooldown:
       default-days: 3
-    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "frontend"
     commit-message:
       prefix: "chore(deps)"
     groups:
-      release-tooling:
+      lucide:
         patterns:
-          - "semantic-release"
-          - "@semantic-release/*"
-          - "conventional-changelog*"
+          - "lucide-static"
+          - "@lucide/*"
+      eslint:
+        patterns:
+          - "eslint"
+          - "@eslint/*"
+          - "typescript-eslint"
+          - "angular-eslint"
       angular:
         patterns:
           - "@angular/*"
+          - "@angular-devkit/*"
       openng:
         patterns:
           - "@openng/*"
+      embedpdf:
+        patterns:
+          - "@embedpdf/*"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+      stylelint:
+        patterns:
+          - "stylelint"
+          - "stylelint-config-*"
+      stomp:
+        patterns:
+          - "@stomp/*"
       vitest:
         patterns:
           - "vitest"
@@ -61,8 +99,15 @@ updates:
         patterns:
           - "actions/upload-artifact"
           - "actions/download-artifact"
+      docker:
+        patterns:
+          - "docker/*"
+      pnpm:
+        patterns:
+          - "pnpm/*"
     labels:
       - "dependencies"
       - "ci"
     commit-message:
       prefix: "chore(deps)"
+    open-pull-requests-limit: 10

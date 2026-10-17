@@ -1,4 +1,4 @@
-import {Component, computed, DestroyRef, effect, EventEmitter, inject, Input, Output, signal} from '@angular/core';
+import {Component, computed, DestroyRef, effect, inject, Input, output, signal} from '@angular/core';
 import {Book, BookMetadata, ComicMetadata, MetadataClearFlags, MetadataUpdateWrapper} from '../../../../book/model/book.model';
 import {MessageService} from '@openng/optimus-ui/api';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray} from '@angular/cdk/drag-drop';
@@ -43,6 +43,16 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
   ]
 })
 export class MetadataPickerComponent {
+  private readonly messageService = inject(MessageService);
+  private readonly bookService = inject(BookService);
+  private readonly bookMetadataManageService = inject(BookMetadataManageService);
+  protected urlHelper = inject(UrlHelperService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly appSettingsService = inject(AppSettingsService);
+  private readonly formBuilder = inject(MetadataFormBuilder);
+  private readonly metadataUtils = inject(MetadataUtilsService);
+  private readonly t = inject(TranslocoService);
+  protected readonly providerFields = inject(MetadataProviderFieldsService);
 
   // Cached arrays for template binding (avoid getter re-computation)
   metadataFieldsTop: MetadataFieldConfig[] = [];
@@ -82,7 +92,7 @@ export class MetadataPickerComponent {
     return this.currentBook;
   }
 
-  @Output() goBack = new EventEmitter<boolean>();
+  readonly goBack = output<boolean>();
 
   currentBook: Book | null = null;
 
@@ -97,17 +107,6 @@ export class MetadataPickerComponent {
   originalMetadata!: BookMetadata;
   isSaving = false;
   hoveredFields: Record<string, boolean> = {};
-
-  private messageService = inject(MessageService);
-  private bookService = inject(BookService);
-  private bookMetadataManageService = inject(BookMetadataManageService);
-  protected urlHelper = inject(UrlHelperService);
-  private destroyRef = inject(DestroyRef);
-  private appSettingsService = inject(AppSettingsService);
-  private formBuilder = inject(MetadataFormBuilder);
-  private metadataUtils = inject(MetadataUtilsService);
-  private readonly t = inject(TranslocoService);
-  protected readonly providerFields = inject(MetadataProviderFieldsService);
   private readonly uniqueMetadata = computed(() => this.bookService.uniqueMetadata());
 
 
@@ -500,7 +499,7 @@ export class MetadataPickerComponent {
       }
     }
 
-    return flags as MetadataClearFlags;
+    return flags;
   }
 
   getThumbnail(): string | null {
@@ -712,12 +711,12 @@ export class MetadataPickerComponent {
     if (book.isPhysical) {
       return true;
     }
-    const allFiles = [book.primaryFile, ...(book.alternativeFormats || [])].filter(f => f?.bookType);
+    const allFiles = [book.primaryFile, ...(book.alternativeFormats ?? [])].filter(f => f?.bookType);
     return allFiles.some(f => f!.bookType !== 'AUDIOBOOK');
   }
 
   hasAudiobookFormat(book: Book): boolean {
-    const allFiles = [book.primaryFile, ...(book.alternativeFormats || [])].filter(f => f?.bookType);
+    const allFiles = [book.primaryFile, ...(book.alternativeFormats ?? [])].filter(f => f?.bookType);
     return allFiles.some(f => f!.bookType === 'AUDIOBOOK');
   }
 
