@@ -22,6 +22,7 @@ import org.booklore.exception.ApiError;
 import org.booklore.model.dto.BookLoreUser;
 import org.booklore.model.dto.browse.FacetGroupsResponse;
 import org.booklore.model.dto.browse.FacetGroupsResponse.FacetGroup;
+import org.booklore.model.dto.browse.FacetGroupsResponse.Metadata;
 import org.booklore.model.entity.BookEntity;
 import org.booklore.model.entity.BookFileEntity;
 import org.booklore.model.entity.UserBookProgressEntity;
@@ -157,7 +158,7 @@ public class BookFacetService {
             for (FacetDef def : FACETS) {
 
                 Specification<BookEntity> base = filterSpecifications.base(query, facets, facetLogic, scope, def.key());
-                groups.add(facetGroup(def, base, scope, builder));
+                groups.add(new FacetGroup(new Metadata("facet", def.key(), def.title(), hasItems(def, base, scope)), List.of()));
             }
             return new FacetGroupsResponse(builder.selfLinks(), groups);
         });
@@ -229,6 +230,28 @@ public class BookFacetService {
                     .toList();
         }
         return builder.group(def.key(), def.title(), counts);
+    }
+
+    private boolean hasItems(FacetDef def, Specification<BookEntity> base, BrowseScope scope) {
+        return anyValue(def, base, scope) || ("file_type".equals(def.key()) && anyValue(PHYSICAL_FILE_TYPE, base, scope));
+    }
+
+    private boolean anyValue(FacetDef def, Specification<BookEntity> base, BrowseScope scope) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Integer> cq = cb.createQuery(Integer.class);
+        Root<BookEntity> root = cq.from(BookEntity.class);
+        Expression<?> value = def.value().apply(cb, root, scope);
+
+        List<Predicate> predicates = new ArrayList<>();
+        Predicate basePredicate = base.toPredicate(root, cq, cb);
+        if (basePredicate != null) {
+            predicates.add(basePredicate);
+        }
+        predicates.add(cb.isNotNull(value));
+
+        cq.select(cb.literal(1));
+        cq.where(predicates.toArray(Predicate[]::new));
+        return !entityManager.createQuery(cq).setMaxResults(1).getResultList().isEmpty();
     }
 
     private List<FacetResponseBuilder.FacetCount> count(FacetDef def, Specification<BookEntity> base, BrowseScope scope) {
