@@ -10,7 +10,7 @@ plugins {
     id("org.springframework.boot") version "4.1.2"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.hibernate.orm") version "7.4.10.Final"
-    id("com.github.ben-manes.versions") version "0.66.0"
+    id("com.github.ben-manes.versions") version "0.67.0"
     jacoco
 }
 
@@ -147,7 +147,7 @@ dependencies {
     implementation("com.github.junrar:junrar:8.1.2")
 
     // --- JSON & Web Scraping ---
-    implementation("org.jsoup:jsoup:1.23.2")
+    implementation("org.jsoup:jsoup:1.24.1")
 
     // --- i18n / Language Normalization ---
     implementation("com.neovisionaries:nv-i18n:1.29")
@@ -163,7 +163,7 @@ dependencies {
     implementation("org.apache.commons:commons-text:1.15.0")
 
     // --- MIME Detection ---
-    implementation("org.apache.tika:tika-core:4.1.0")
+    implementation("org.apache.tika:tika-core:4.2.0")
 
     // --- XML Support (JAXB) ---
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.5")
