@@ -6,10 +6,11 @@ import {Button} from '@openng/optimus-ui/button';
 import {Checkbox} from '@openng/optimus-ui/checkbox';
 import {Select} from '@openng/optimus-ui/select';
 import {injectQuery} from '@tanstack/angular-query-experimental';
+import {injectHiddenProviderFieldKeys} from '../../../book/browse/book-browse-fields';
 import {bookSortOptions} from '../../../book/browse/book-browse-sort';
 import {EMPTY_FACET_SELECTION} from '../../../book/data/book-query-params';
 import {BookQueryService} from '../../../book/data/book-query.service';
-import {ShelfDefinitionQueryService} from '../../../book/data/shelf-definition-query.service';
+import {ShelfQueryService} from '../../../shelf/data/shelf-query.service';
 import {LibraryService} from '../../../book/service/library.service';
 import {
   DashboardConfig,
@@ -41,14 +42,15 @@ export class DashboardPreferencesComponent {
   private readonly messageService = inject(MessageService);
   private readonly magicShelfService = inject(MagicShelfService);
   private readonly libraryService = inject(LibraryService);
-  private readonly shelfDefinitionQuery = inject(ShelfDefinitionQueryService);
+  private readonly shelfQuery = inject(ShelfQueryService);
   private readonly bookQuery = inject(BookQueryService);
   private readonly translocoService = inject(TranslocoService);
-  private readonly shelvesQuery = injectQuery(() => this.shelfDefinitionQuery.definitions());
+  private readonly shelvesQuery = injectQuery(() => this.shelfQuery.shelves());
+  private readonly hiddenProviderFields = injectHiddenProviderFieldKeys();
   private readonly sortTokensQuery = injectQuery(() =>
     this.bookQuery.facetIndex({facets: EMPTY_FACET_SELECTION}));
   private readonly sortOptions = computed(() =>
-    bookSortOptions(this.sortTokensQuery.data()?.sortTokens ?? []));
+    bookSortOptions(this.sortTokensQuery.data()?.sortTokens ?? [], this.hiddenProviderFields()));
   private readonly activeLanguage = toSignal(this.translocoService.langChanges$, {
     initialValue: this.translocoService.getActiveLang()
   });
